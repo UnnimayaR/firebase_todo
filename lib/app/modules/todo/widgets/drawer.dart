@@ -27,6 +27,7 @@ Widget buildDrawer() {
           // if (await Utils.hasNetwork()) {
           // Utils.showLoader();
           File imageFile = File(image!.path);
+
           FirebaseStorage storage = FirebaseStorage.instance;
           Reference ref = storage.ref().child(user.uid);
           UploadTask uploadTask = ref.putFile(imageFile);
@@ -111,7 +112,7 @@ Widget buildDrawer() {
             await GoogleSignIn().signOut();
             await FirebaseAuth.instance.signOut();
 
-            Get.offAllNamed(Routes.auth);
+            Get.offAllNamed(Routes.login);
           },
         ),
       ],

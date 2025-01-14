@@ -67,13 +67,13 @@ class _LoginPageState extends State<LoginPage> {
               },
               child: const Text('Register'),
             ),
-            TextButton(
-              onPressed: () {
-                // Implement Forgot Password functionality here
-                // ...
-              },
-              child: const Text('Forgot Password?'),
-            ),
+            // TextButton(
+            //   onPressed: () {
+            //     // Implement Forgot Password functionality here
+            //     // ...
+            //   },
+            //   child: const Text('Forgot Password?'),
+            // ),
           ],
         ),
       ),

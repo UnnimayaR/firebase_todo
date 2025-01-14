@@ -14,75 +14,83 @@ class TodoListPage extends StatelessWidget {
     return Scaffold(
       drawer: buildDrawer(),
       appBar: AppBar(
-        title: const Text('Todo List'),
+        title: const Text('Your Tasks'),
       ),
-      body: Obx(() => ListView.builder(
-            itemCount: todoController.todos.length,
-            itemBuilder: (context, index) {
-              final todo = todoController.todos[index];
-              return ListTile(
-                title: Text(todo['task']),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () {
-                        todoController.taskController.text = todo['task'];
-                        Get.dialog(
-                          AlertDialog(
-                            title: const Text('Add Todo'),
-                            content: TextField(
-                              controller: todoController.taskController,
-                              decoration:
-                                  const InputDecoration(hintText: 'Enter task'),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Get.back(),
-                                child: const Text('Cancel'),
+      body: Obx(() => Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView.builder(
+              itemCount: todoController.todos.length,
+              itemBuilder: (context, index) {
+                final todo = todoController.todos[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: ListTile(
+                    tileColor: Colors.green[50],
+                    title: Text(todo['task']),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () {
+                            todoController.taskController.text = todo['task'];
+                            Get.dialog(
+                              AlertDialog(
+                                title: const Text('Add Todo'),
+                                content: TextField(
+                                  controller: todoController.taskController,
+                                  decoration: const InputDecoration(
+                                      hintText: 'Enter task'),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Get.back(),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      todoController.editTodo(
+                                          todo.id, todo['task']);
+                                      Get.back();
+                                    },
+                                    child: const Text('Update'),
+                                  ),
+                                ],
                               ),
-                              TextButton(
-                                onPressed: () {
-                                  todoController.editTodo(
-                                      todo.id, todo['task']);
-                                  Get.back();
-                                },
-                                child: const Text('Update'),
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            Get.dialog(
+                              AlertDialog(
+                                title: const Text('Delete Task'),
+                                content:
+                                    Text('Are you sure to delete the task?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Get.back(),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      todoController.deleteTodo(todo.id);
+                                      Get.back();
+                                    },
+                                    child: const Text('Okay'),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        );
-                      },
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        Get.dialog(
-                          AlertDialog(
-                            title: const Text('Delete Task'),
-                            content: Text('Are you sure to delete the task?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Get.back(),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  todoController.deleteTodo(todo.id);
-                                  Get.back();
-                                },
-                                child: const Text('Okay'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              );
-            },
+                  ),
+                );
+              },
+            ),
           )),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
