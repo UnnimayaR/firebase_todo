@@ -67,13 +67,35 @@ class _LoginPageState extends State<LoginPage> {
               },
               child: const Text('Register'),
             ),
-            // TextButton(
-            //   onPressed: () {
-            //     // Implement Forgot Password functionality here
-            //     // ...
-            //   },
-            //   child: const Text('Forgot Password?'),
-            // ),
+            TextButton(
+              onPressed: () {
+                Get.dialog(
+                  AlertDialog(
+                    title: const Text('Forgot Password'),
+                    content: TextField(
+                      controller: loginController.resetController,
+                      decoration:
+                          const InputDecoration(hintText: 'Enter email'),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Get.back(),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          loginController.forgotPassword(
+                              email: loginController.resetController.text);
+                          Get.back();
+                        },
+                        child: const Text('Ok'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: const Text('Forgot Password?'),
+            ),
           ],
         ),
       ),

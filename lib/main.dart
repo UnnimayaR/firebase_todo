@@ -1,4 +1,3 @@
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase/app/routes/app_pages.dart';
@@ -11,8 +10,8 @@ void main() async {
     await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
   }
-  FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.instance;
-  firebaseAppCheck.activate();
+  // FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.instance;
+  // firebaseAppCheck.activate();
 
   runApp(MyApp());
 }

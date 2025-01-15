@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_firebase/app/modules/todo/widgets/text_field_widget.dart';
 import 'package:get/get.dart';
 
 import '../widgets/drawer.dart';
@@ -25,64 +26,47 @@ class TodoListPage extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: ListTile(
-                    tileColor: Colors.green[50],
-                    title: Text(todo['task']),
+                    onTap: () {
+                      todoController.taskController.text = todo['title'];
+                      todoController.descriptionController.text =
+                          todo['description'];
+                      todoController.dateController.text = todoController
+                          .formatter
+                          .format(DateTime.parse(todo['dueDate']));
+                      todoController.selectedPriority.value = todo['priority'];
+                      todoController.status.value = todo['status'];
+                      todoController.todoAlert(isFromEdit: true, todo: todo);
+                    },
+                    tileColor: todo['priority'] == 'HIGH'
+                        ? Colors.red[100]
+                        : todo['priority'] == 'MEDIUM'
+                            ? Colors.amber
+                            : Colors.lightBlue[100],
+                    title: Text(todo['title'] ?? ''),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(todo['description']),
+                        Text(todoController.formatter
+                            .format(DateTime.parse(todo['dueDate']))),
+                      ],
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.edit),
+                          icon: const Icon(Icons.check),
                           onPressed: () {
-                            todoController.taskController.text = todo['task'];
-                            Get.dialog(
-                              AlertDialog(
-                                title: const Text('Add Todo'),
-                                content: TextField(
-                                  controller: todoController.taskController,
-                                  decoration: const InputDecoration(
-                                      hintText: 'Enter task'),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Get.back(),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      todoController.editTodo(
-                                          todo.id, todo['task']);
-                                      Get.back();
-                                    },
-                                    child: const Text('Update'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            Get.dialog(
-                              AlertDialog(
-                                title: const Text('Delete Task'),
-                                content:
-                                    Text('Are you sure to delete the task?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Get.back(),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      todoController.deleteTodo(todo.id);
-                                      Get.back();
-                                    },
-                                    child: const Text('Okay'),
-                                  ),
-                                ],
-                              ),
-                            );
+                            todoController.taskController.text = todo['title'];
+                            todoController.descriptionController.text =
+                                todo['description'];
+                            todoController.dateController.text = todoController
+                                .formatter
+                                .format(DateTime.parse(todo['dueDate']));
+                            todoController.selectedPriority.value =
+                                todo['priority'];
+                            todoController.status.value = todo['status'];
+                            todoController.completeTask(todo);
                           },
                         ),
                       ],
@@ -94,31 +78,14 @@ class TodoListPage extends StatelessWidget {
           )),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Get.dialog(
-            AlertDialog(
-              title: const Text('Add Todo'),
-              content: TextField(
-                controller: todoController.taskController,
-                decoration: const InputDecoration(hintText: 'Enter task'),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Get.back(),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    todoController.addTodo();
-                    Get.back();
-                  },
-                  child: const Text('Add'),
-                ),
-              ],
-            ),
-          );
+          todoController.todoAlert();
         },
         child: const Icon(Icons.add),
       ),
     );
   }
+}
+
+class Constants {
+  static const List<String> choices = <String>['Edit', 'Delete'];
 }

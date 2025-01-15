@@ -1,6 +1,4 @@
 import 'dart:developer';
-import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -11,52 +9,37 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 
 Widget buildDrawer() {
-  var user = FirebaseAuth.instance.currentUser;
-  final auth = FirebaseAuth.instance;
+  TextEditingController nameController = TextEditingController();
+  var user = FirebaseAuth.instance.currentUser.obs;
+  var loading = false.obs;
   // ignore: unused_local_variable
   final storage = FirebaseStorage.instance;
   XFile? image;
 
   updatePhoto() async {
-    log('hdgfjhsgjhsdjh');
     image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    try {
-      final user = auth.currentUser;
-      if (user != null) {
-        if (image != null) {
-          // if (await Utils.hasNetwork()) {
-          // Utils.showLoader();
-          File imageFile = File(image!.path);
-
-          FirebaseStorage storage = FirebaseStorage.instance;
-          Reference ref = storage.ref().child(user.uid);
-          UploadTask uploadTask = ref.putFile(imageFile);
-          uploadTask.then((res) {
-            if (res.state == TaskState.success) {
-              res.ref.getDownloadURL().then((url) {
-                print(url);
-              }).catchError((onError) {
-                print("Got Error $onError");
-              });
-            }
-          });
-          // final imageRef = storage.ref().child('user_images/${user.photoURL}');
-          // final uploadTask = await imageRef.putFile(File(image!.path));
-          // final imageUrl = await uploadTask.ref.getDownloadURL();
-
-          user.updateProfile(photoURL: 'imageUrl').then((value) {
-            scaffoldMessenger("Profile has been changed successfully");
-            //DO Other compilation here if you want to like setting the state of the app
-          }).catchError((e) {
-            scaffoldMessenger("There was an error updating profile");
-          });
-        }
-      }
-    } catch (e) {
-      // Handle errors here
-      scaffoldMessenger('Error updating user profile: $e');
-      scaffoldMessenger('Error updating profile: $e');
-    }
+    if (image == null) return;
+    final storageRef = FirebaseStorage.instance.ref();
+    final imageRef =
+        storageRef.child('${user.value!.uid}.${image!.path.split('.').last}');
+    loading.value = true;
+    final imageBytes = await image!.readAsBytes();
+    await imageRef.putData(imageBytes);
+    imageRef.getDownloadURL().then((url) {
+      log(url);
+      user.value!
+          .updateProfile(photoURL: url, displayName: user.value!.displayName)
+          .then((value) {
+        scaffoldMessenger("Profile has been changed successfully");
+        user.value = FirebaseAuth.instance.currentUser;
+        loading.value = false;
+      }).catchError((e) {
+        scaffoldMessenger("There was an error updating profile");
+        loading.value = false;
+      });
+    }).catchError((onError) {
+      log("Got Error $onError");
+    });
   }
 
   return Drawer(
@@ -69,34 +52,83 @@ Widget buildDrawer() {
           child: Column(
             children: [
               SizedBox(height: 30),
-              GestureDetector(
-                onTap: () => updatePhoto(),
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.orange,
-                  backgroundImage: user?.photoURL != null
-                      ? NetworkImage(user!.photoURL!)
-                      : null,
-                  child: user?.photoURL == null
-                      ? Icon(
-                          Icons.person,
-                          size: 40,
-                          color: Colors.white,
-                        )
-                      : null,
-                ),
-              ),
+              Obx(() => GestureDetector(
+                    onTap: () => updatePhoto(),
+                    child: loading.value
+                        ? CircularProgressIndicator()
+                        : CircleAvatar(
+                            radius: 40,
+                            backgroundColor: Colors.orange,
+                            backgroundImage: user.value!.photoURL != null
+                                ? NetworkImage(user.value!.photoURL!)
+                                : null,
+                            child: user.value!.photoURL == null
+                                ? Icon(
+                                    Icons.person,
+                                    size: 40,
+                                    color: Colors.white,
+                                  )
+                                : null,
+                          ),
+                  )),
               SizedBox(height: 10),
-              Text(
-                user?.displayName ?? user?.email ?? 'User',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      nameController.text = user.value!.displayName ?? 'User';
+                      Get.dialog(
+                        AlertDialog(
+                          title: const Text('Edit Name'),
+                          content: TextField(
+                            controller: nameController,
+                            decoration:
+                                const InputDecoration(hintText: 'Enter name'),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Get.back(),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                user.value!
+                                    .updateProfile(
+                                        displayName: nameController.text,
+                                        photoURL: user.value!.photoURL)
+                                    .then((value) {
+                                  scaffoldMessenger(
+                                      "Profile has been changed successfully");
+                                  user.value =
+                                      FirebaseAuth.instance.currentUser;
+                                  loading.value = false;
+                                }).catchError((e) {
+                                  scaffoldMessenger(
+                                      "There was an error updating profile");
+                                  loading.value = false;
+                                });
+                                Get.back();
+                              },
+                              child: const Text('Update'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    child: Obx(() => Text(
+                          user.value!.displayName ?? 'User',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )),
+                  ),
+                ],
               ),
               Text(
-                'ID: ${user?.uid.substring(0, 3) ?? '000'}',
+                'ID: ${user.value!.uid.substring(0, 3) ?? '000'}',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,

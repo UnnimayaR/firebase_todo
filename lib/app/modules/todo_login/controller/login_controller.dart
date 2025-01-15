@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase/app/modules/todo/views/todo.dart';
+import 'package:flutter_firebase/app/modules/todo/widgets/scaffold_messenger.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,6 +10,7 @@ import '../../../routes/app_pages.dart';
 class LoginController extends GetxController {
   final _auth = FirebaseAuth.instance;
   final emailController = TextEditingController();
+  final resetController = TextEditingController();
   final passwordController = TextEditingController();
   var rememberMe = false.obs;
   Rx<User?> user = Rx<User?>(null);
@@ -64,6 +66,17 @@ class LoginController extends GetxController {
           content: Text('Login failed: ${e.code}'),
         ),
       );
+    }
+  }
+
+  Future forgotPassword({required String email}) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      scaffoldMessenger('We have shared a mail to reset your password');
+    } on FirebaseAuthException catch (err) {
+      throw Exception(err.message.toString());
+    } catch (err) {
+      throw Exception(err.toString());
     }
   }
 }
